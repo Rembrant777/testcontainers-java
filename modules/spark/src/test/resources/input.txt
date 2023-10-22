@@ -1,0 +1,5 @@
+Hello world, this is a sample input text for the WordCount example.
+WordCount is a common example in big data processing.
+This is a sample text to demonstrate the WordCount operation.
+The WordCount program counts the frequency of each word in the text.
+It helps analyze and process large volumes of text data.
