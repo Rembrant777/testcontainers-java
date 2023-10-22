@@ -65,6 +65,7 @@ public class SparkStandaloneContainerCluster implements Startable {
                         .withExposedPorts(SPARK_WORKER_PORT)
                         .dependsOn(this.master)
                         .withEnv("SPARK_WORKER_PORT", String.valueOf(SPARK_WORKER_PORT))
+                        .withEnv("SPARK_MASTER", String.format("spark://spark-master:%s", SPARK_MASTER_PORT))
                         .withStartupTimeout(Duration.ofMinutes(1));
                 })
                 .collect(Collectors.toSet());
@@ -102,5 +103,28 @@ public class SparkStandaloneContainerCluster implements Startable {
     @Override
     public void close() {
         Startable.super.close();
+    }
+
+    public String getMasterAddr() {
+        String ret = null;
+        String hostname = "localhost";
+        String masterPort = String.valueOf(this.master.getMappedPort(SPARK_MASTER_PORT));
+
+        ret = String.format("spark://%s:%s", hostname, masterPort);
+
+        log.info("#getMasterAddr {}", ret);
+        return ret;
+    }
+
+    public String getMasterWebAddr() {
+        String ret = null;
+
+        String hostname = "localhost";
+        String masterWebPort = String.valueOf(this.master.getMappedPort(SPARK_MASTER_WEBUI_PORT));
+
+        ret = String.format("http://%s:%s", hostname, masterWebPort);
+
+        log.info("#getMasterWebAddr {}", ret);
+        return ret;
     }
 }
