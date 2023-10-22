@@ -1,6 +1,5 @@
 package org.testcontainers.containers;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.lifecycle.Startable;
@@ -8,7 +7,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,34 +21,39 @@ public class SparkStandaloneContainerCluster implements Startable {
     private final String SPARK_MASTER_IMAGE = "bde2020/spark-master:3.3.0-hadoop3.3";
 
     private final String SPARK_WORKER_IMAGE = "bde2020/spark-worker:3.3.0-hadoop3.3";
+
     private final Collection<GenericContainer> workers;
 
     private final GenericContainer<?> master;
 
     public final int SPARK_WORKER_PORT = 8091;
+
     public final int SPARK_MASTER_PORT = 7070;
+
     public final int SPARK_MASTER_WEBUI_PORT = 8080;
 
-
     public SparkStandaloneContainerCluster(int workersNum) {
-        log.info("#SPARK init container cluster with spark master image {}, spark worker image {}," +
-            " workerNum {}", this.SPARK_MASTER_IMAGE, this.SPARK_WORKER_IMAGE, workersNum);
+        log.info(
+            "#SPARK init container cluster with spark master image {}, spark worker image {}," + " workerNum {}",
+            this.SPARK_MASTER_IMAGE,
+            this.SPARK_WORKER_IMAGE,
+            workersNum
+        );
 
         if (workersNum < 0) {
             throw new IllegalArgumentException("workersNum ' " + workersNum + "' must be greater than 0");
         }
 
-
         this.workersNum = workersNum;
         this.network = Network.newNetwork();
 
-        this.master = new GenericContainer<>(DockerImageName.parse(SPARK_MASTER_IMAGE))
-            .withNetwork(this.network)
-            .withNetworkAliases("spark-master")
-            .withEnv("SPARK_MASTER_PORT", String.valueOf(SPARK_MASTER_PORT))
-            .withEnv("SPARK_MASTER_WEBUI_PORT", String.valueOf(SPARK_MASTER_WEBUI_PORT))
-            .withExposedPorts(SPARK_MASTER_PORT, SPARK_MASTER_WEBUI_PORT);
-
+        this.master =
+            new GenericContainer<>(DockerImageName.parse(SPARK_MASTER_IMAGE))
+                .withNetwork(this.network)
+                .withNetworkAliases("spark-master")
+                .withEnv("SPARK_MASTER_PORT", String.valueOf(SPARK_MASTER_PORT))
+                .withEnv("SPARK_MASTER_WEBUI_PORT", String.valueOf(SPARK_MASTER_WEBUI_PORT))
+                .withExposedPorts(SPARK_MASTER_PORT, SPARK_MASTER_WEBUI_PORT);
 
         this.workers =
             IntStream
@@ -81,10 +84,13 @@ public class SparkStandaloneContainerCluster implements Startable {
         this.master.start();
         this.workers.stream().forEach(GenericContainer::start);
 
-        Unreliables.retryUntilTrue(30, TimeUnit.SECONDS,
+        Unreliables.retryUntilTrue(
+            30,
+            TimeUnit.SECONDS,
             () -> {
                 return this.master.isRunning();
-            });
+            }
+        );
     }
 
     @Override
